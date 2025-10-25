@@ -10,15 +10,15 @@ CREATE TABLE SANPHAM
 (
 	MASP VARCHAR(5) PRIMARY KEY,
 	TENSP NVARCHAR(50),
-	GIA FLOAT,
-	TONKHO INT
+	GIA FLOAT CHECK(GIA >= 0),
+	TONKHO INT CHECK(TONKHO >= 0)
 ) 
 
 CREATE TABLE DONHANG
 (
 	MADH VARCHAR(5) PRIMARY KEY, 
-	NGAYDAT DATE, 
-	TONGTIEN FLOAT, 
+	NGAYDAT DATE CHECK (NGAYDAT <= GETDATE()), 
+	TONGTIEN FLOAT DEFAULT 0, 
 	MANV VARCHAR(5)
 )
 
@@ -26,7 +26,7 @@ CREATE TABLE CHITIETDONHANG
 (
 	MADH VARCHAR(5), 
 	MASP VARCHAR(5), 
-	SOLUONG INT, 
+	SOLUONG INT CHECK(SOLUONG > 0), 
 	THANHTIEN FLOAT
 
 	PRIMARY KEY(MADH, MASP)
@@ -71,19 +71,79 @@ VALUES
 GO
 
 -- Thêm chi tiết đơn hàng
-INSERT INTO CHITIETDONHANG (MADH, MASP, SOLUONG, THANHTIEN)
+INSERT INTO CHITIETDONHANG (MADH, MASP, SOLUONG)
 VALUES
-('DH01', 'SP01', 2, 500000),
-('DH01', 'SP02', 1, 800000),
-('DH02', 'SP03', 1, 3200000),
-('DH02', 'SP04', 2, 900000);
+('DH01', 'SP01', 2),
+('DH01', 'SP02', 1),
+('DH02', 'SP03', 1),
+('DH02', 'SP04', 2);
 GO
 
--- Cập nhật tổng tiền đơn hàng dựa theo chi tiết
-UPDATE DONHANG
-SET TONGTIEN = (
-    SELECT SUM(THANHTIEN)
-    FROM CHITIETDONHANG C
-    WHERE C.MADH = DONHANG.MADH
-);
-GO
+CREATE PROCEDURE ThemChiTietDonHang
+    @MADH VARCHAR(5),
+    @MASP VARCHAR(5),
+    @SOLUONG INT
+AS
+BEGIN
+    BEGIN TRAN
+
+    DECLARE @GIA FLOAT
+    DECLARE @TONKHO INT
+    DECLARE @THANHTIEN FLOAT
+
+    -- Lấy giá và tồn kho hiện tại
+    SELECT @GIA = GIA, @TONKHO = TONKHO
+    FROM SANPHAM
+    WHERE MASP = @MASP
+
+    -- Kiểm tra tồn kho đủ không
+    IF @TONKHO < @SOLUONG
+    BEGIN
+        PRINT N'Lỗi: Số lượng tồn kho không đủ!'
+        ROLLBACK TRAN
+        RETURN
+    END
+
+    -- Tính thành tiền
+    SET @THANHTIEN = @SOLUONG * @GIA
+
+    -- Thêm chi tiết đơn hàng
+    INSERT INTO CHITIETDONHANG (MADH, MASP, SOLUONG, THANHTIEN)
+    VALUES (@MADH, @MASP, @SOLUONG, @THANHTIEN)
+	IF (@@ERROR != 0)
+	BEGIN
+		PRINT N'Lỗi: Thêm chi tiết đơn hàng!'
+        ROLLBACK TRAN
+        RETURN
+	END
+
+    -- Cập nhật tồn kho
+    UPDATE SANPHAM
+    SET TONKHO = TONKHO - @SOLUONG
+    WHERE MASP = @MASP
+	IF (@@ERROR != 0)
+	BEGIN
+		PRINT N'Lỗi: Cập nhật tồn kho sản phẩm!'
+        ROLLBACK TRAN
+        RETURN
+	END
+
+    -- Cập nhật tổng tiền đơn hàng
+    UPDATE DONHANG
+    SET TONGTIEN = (
+        SELECT SUM(THANHTIEN)
+        FROM CHITIETDONHANG
+        WHERE MADH = @MADH
+    )
+    WHERE MADH = @MADH
+	IF (@@ERROR != 0)
+	BEGIN
+		PRINT N'Lỗi: Cập nhật tổng tiền sản phẩm!'
+        ROLLBACK TRAN
+        RETURN
+	END
+
+    COMMIT TRAN
+    PRINT N'Thêm chi tiết đơn hàng thành công!'
+END
+
