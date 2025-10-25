@@ -1,0 +1,28 @@
+USE KHOHANG
+GO
+drop procedure if exists cap_nhat_ton_kho
+GO
+create procedure cap_nhat_ton_kho @v_masp varchar(5), @v_tonkho INT
+AS
+BEGIN
+    BEGIN TRY
+    BEGIN TRAN
+    DECLARE @TONKHO INT = (SELECT TONKHO FROM SANPHAM WHERE MASP = @v_masp)
+    PRINT N'TON KHO: ' + CAST(@TONKHO AS NVARCHAR)
+    WAITFOR DELAY '00:00:10'
+    IF @v_tonkho > @TONKHO
+    BEGIN
+        PRINT N'KHONG DU SO LUONG'
+        ROLLBACK TRAN
+    END
+    SET @TONKHO -= @v_tonkho
+    UPDATE SANPHAM SET TONKHO = @TONKHO WHERE MASP = @v_masp
+    PRINT N'CAP NHAT THANH CONG'
+    COMMIT TRAN
+    END TRY
+
+    BEGIN CATCH
+    PRINT 'NOT COMMITTED. ROLLBACK'
+    ROLLBACK TRAN
+    END CATCH
+END
