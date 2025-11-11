@@ -1,0 +1,23 @@
+﻿-- Younger Transaction
+USE KHOHANG
+GO
+
+-- Timeout if dying
+SET LOCK_TIMEOUT 1000 -- 1 second
+
+BEGIN TRAN
+BEGIN TRY
+    UPDATE SANPHAM SET TONKHO = 1 WHERE MASP = 'SP01'
+
+    WAITFOR DELAY '00:00:10'
+    
+    UPDATE NHANVIEN SET CHUCVU = 'XYZ' WHERE HOTEN = N'Nguyễn Văn An' 
+    
+    COMMIT TRAN
+END TRY
+BEGIN CATCH
+    -- T2 dies
+    ROLLBACK TRAN
+END CATCH
+
+SET LOCK_TIMEOUT -1 -- Reset to default
