@@ -1,18 +1,14 @@
-﻿-- Older Transaction
-USE KHOHANG
+﻿USE KHOHANG
 GO
 
 SET DEADLOCK_PRIORITY HIGH
 
 BEGIN TRAN
-    UPDATE NHANVIEN SET CHUCVU = 'ABC' WHERE HOTEN = N'Nguyễn Văn An'
 
-    WAITFOR DELAY '00:00:05' 
+UPDATE SANPHAM SET TONKHO = TONKHO - 1 WHERE MASP = 'SP01'
 
-    -- This will cause a deadlock, but SQL Server will kill T2.
-    -- T1 will simply wait until T2 is rolled back, then continue.
-    UPDATE SANPHAM SET TONKHO = 1 WHERE MASP = 'SP01'
+WAITFOR DELAY '00:00:10'
+
+UPDATE SANPHAM SET TONKHO = TONKHO - 1 WHERE MASP = 'SP02'
 
 COMMIT TRAN
-
-SET DEADLOCK_PRIORITY NORMAL -- Reset
