@@ -76,7 +76,7 @@ GO
 -- Thêm sản phẩm
 INSERT INTO SANPHAM (MASP, TENSP, GIA, TONKHO)
 VALUES
-('SP01', N'Chuột không dây', 250000, 100),
+('SP01', N'Chuột không dây', 250000, 50),
 ('SP02', N'Bàn phím cơ', 800000, 50),
 ('SP03', N'Màn hình 24 inch', 3200000, 20),
 ('SP04', N'Tai nghe Bluetooth', 450000, 60);
