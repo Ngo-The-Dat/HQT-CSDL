@@ -6,3 +6,13 @@
     - `ERROR`: Chứa 2 file chạy demo tranh chấp.
     - `FIX`: 2 folder là `WITH ISOLATION LEVEL` (sử dụng mức cô lập) và `WITH LOCK` (sử dụng khóa) để giải quyết tranh chấp
 3. Chạy file `T1.sql` rồi đến `T2.sql` để thấy tranh chấp xảy ra hoặc được giải quyết.
+
+Đối với DEADLOCK thì sẽ có 3 hướng giải quyết tranh chấp: 
+
+- Ordering, 
+- Wait-Die, 
+- Wound-Wait. 
+
+Mỗi hướng sẽ được đặt tên file theo mẫu 'T1-Ordering.sql', 'T2-Ordering.sql', ... 
+
+=> Chạy file `T1-Ordering.sql` rồi đến `T2-Ordering.sql` để thấy cách giải quyết tranh chấp.
