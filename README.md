@@ -13,6 +13,6 @@
 - Wait-Die, 
 - Wound-Wait. 
 
-Mỗi hướng sẽ được đặt tên file theo mẫu 'T1-Ordering.sql', 'T2-Ordering.sql', ... 
+Mỗi hướng sẽ được đặt tên file theo mẫu `T1-Ordering.sql`, `T2-Ordering.sql`, ... 
 
 => Chạy file `T1-Ordering.sql` rồi đến `T2-Ordering.sql` để thấy cách giải quyết tranh chấp.
